@@ -1,0 +1,39 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    username: root
+    password: root
+    url: jdbc:mysql://localhost:3306/search_engine?useSSL=false&requireSSL=false&createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8&serverTimezone=UTC
+    driverClassName: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+    defer-datasource-initialization: true
+    properties:
+      hibernate:
+        show_sql: false
+        format_sql: false
+        enable_lazy_load_no_trans: true
+  sql:
+    init:
+      mode: always
+
+logging:
+  level:
+    org:
+      hibernate:
+        type: trace
+
+indexing-settings:
+  sites:
+    - url: http://test.portsurgut.ru/
+      name: PORT_test
+    - url: https://slenta.ru/
+      name: slenta
+    - url: http://cimus.biz
+      name: DOM
+  agent: Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6
+  referer: https://www.google.com

@@ -1,0 +1,16 @@
+[
+  {
+    "code": 200,
+    "content": "content_1",
+    "path": "path_page_1",
+    "site_id":1
+  },
+  {
+    "code": 200,
+    "content": "content_2",
+    "path": "path_page_2",
+    "site_id":1
+  }
+]
+
+
