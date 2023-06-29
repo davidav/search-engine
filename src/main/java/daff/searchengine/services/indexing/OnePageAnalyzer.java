@@ -89,8 +89,12 @@ public class OnePageAnalyzer implements Runnable {
 
         List<IndexEntity> indexEntitiesForPage = indexRepository.findAllByPageId(page.getId());
 
-        List<LemmaEntity> lemmaEntities = lemmaRepository.findAllByIdIn(
-                indexEntitiesForPage.stream().map(IndexEntity::getLemmaId).toList());
+        List<Integer> lemmaIds = new ArrayList<>();
+        for (IndexEntity indexEntity : indexEntitiesForPage) {
+            Integer lemmaId = indexEntity.getLemmaId();
+            lemmaIds.add(lemmaId);
+        }
+        List<LemmaEntity> lemmaEntities = lemmaRepository.findAllByIdIn(lemmaIds);
 
         for (LemmaEntity l : lemmaEntities) {
             if (l.getFrequency() > 1) {

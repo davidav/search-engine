@@ -56,9 +56,12 @@ public class SearchSiteAnalyzer implements Callable<Boolean> {
         List<LemmaEntity> lemmasRequest = lemmaRepository.findAllByLemmaInAndSiteId(
                 searchRequest.getQuery(), searchRequest.getSite().getId());
         if (lemmasRequest.size() != searchRequest.getQuery().size() || lemmasRequest.isEmpty()) return false;
-
-        List<IndexEntity> indexesRequest = indexRepository.findAllByLemmaIdIn(
-                lemmasRequest.stream().map(LemmaEntity::getId).toList());
+        List<Integer> lemmaRequestIds = new ArrayList<>();
+        for (LemmaEntity lemmaEntity : lemmasRequest) {
+            Integer id = lemmaEntity.getId();
+            lemmaRequestIds.add(id);
+        }
+        List<IndexEntity> indexesRequest = indexRepository.findAllByLemmaIdIn(lemmaRequestIds);
 
         List<PageModel> pagesRequest = getPagesRequest(indexesRequest, lemmasRequest.size());
         if (pagesRequest.isEmpty()) return false;
