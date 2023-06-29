@@ -1,0 +1,15 @@
+Add English
+
+ 1.ConfigBeans
+    @Bean
+    public LuceneMorphology luceneMorphologyEng() throws IOException {
+        return new EnglishLuceneMorphology();
+    }
+	
+2.LemmaFinder
+
+- private final LuceneMorphology luceneMorphologyEng;
+
+- private final String[] ENG_PARTICLES_NAMES = new String[]{"PN", "PREP", "PART", "ARTICLE"};
+
+- if (text.matches("[а-яА-ЯёЁ]"))

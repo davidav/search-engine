@@ -67,9 +67,9 @@ public class IndexingServiceImpl implements IndexingService {
 
     @Override
     public boolean isIndexing() {
-            for (Future<Boolean> f : futures) {
-                if (!f.isDone()) return true;
-            }
+        for (Future<Boolean> f : futures) {
+            if (!f.isDone()) return true;
+        }
         return false;
     }
 
@@ -80,8 +80,13 @@ public class IndexingServiceImpl implements IndexingService {
         List<SiteEntity> sites = initSites();
         List<SiteAnalyzer> siteAnalyzers = new ArrayList<>();
         sites.forEach(site -> siteAnalyzers.add(
-                new SiteAnalyzer(site, siteRepository, pageRepository,
-                        lemmaRepository, indexRepository, lemmaFinder)));
+                new SiteAnalyzer(
+                        site,
+                        siteRepository,
+                        pageRepository,
+                        lemmaRepository,
+                        indexRepository,
+                        lemmaFinder)));
         executorService = Executors.newFixedThreadPool(siteAnalyzers.size());
         for (SiteAnalyzer siteAnalyzer : siteAnalyzers) {
             try {
@@ -112,7 +117,14 @@ public class IndexingServiceImpl implements IndexingService {
                 throw new AppHelperException("Данная страница находится за пределами сайтов, " +
                         "указанных в конфигурационном файле");
             validateUrl(urlPage);
-            new Thread(new OnePageAnalyzer(url, sitesConfig, lemmaFinder, siteRepository, pageRepository, lemmaRepository, indexRepository))
+            new Thread(new OnePageAnalyzer(
+                    url,
+                    sitesConfig,
+                    lemmaFinder,
+                    siteRepository,
+                    pageRepository,
+                    lemmaRepository,
+                    indexRepository))
                     .start();
         } catch (MalformedURLException e) {
             throw new AppHelperException("url error " + e.getMessage());
@@ -121,7 +133,7 @@ public class IndexingServiceImpl implements IndexingService {
     }
 
     @NotNull
-    private  List<SiteEntity> initSites() {
+    private List<SiteEntity> initSites() {
         List<SiteEntity> sites = new ArrayList<>();
         for (SiteConfig siteConfig : sitesConfig.getSites()) {
             SiteEntity site = SiteEntity.builder()

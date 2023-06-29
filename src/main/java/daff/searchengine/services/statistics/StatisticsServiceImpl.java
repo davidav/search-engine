@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -55,7 +56,12 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     private List<Detailed> getDetailedList() {
             List<SiteEntity> sites = siteRepository.findAll();
-            return sites.stream().map(this::getDetailed).toList();
+        List<Detailed> detaileds = new ArrayList<>();
+        for (SiteEntity site : sites) {
+            Detailed detailed = getDetailed(site);
+            detaileds.add(detailed);
+        }
+        return detaileds;
     }
 
     private Detailed getDetailed(@NotNull SiteEntity site) {

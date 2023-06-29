@@ -1,0 +1,28 @@
+класс SiteAnalyzer
+
+На входе через конструктор:
+SiteEntity - исследуемый сайт, 
+LemmaFinder - лемматизатор,
+SiteRepository, PageRepository, LemmaRepository, IndexRepository,
+
+
+все это приходит из IndexingServiceImpl
+
+- выводим в лог начало парсинга сайта
+- удаление старых данных из БД если они есть (данные из SiteRepository и PageRepository удаляются командами в коде,
+из LemmaRepository и IndexRepository благодаря каскадным отношениям между сущностями которые реализовывает Hibernate)
+- сохраняем в БД сайт и получам обратно уже с новым id
+- передаем в ForkJoinPool начальную страницу (объект PageAnalyzer) и ждем выполнения или прерывания парсинга сайта.
+    - если парсинг прошел без ошибок и ForkJoinPool вернул true
+        - в поле Status заносим "INDEXED"
+        - в поле LastError заносим ""
+    - если ForkJoinPool вернул false то:
+        - в поле Status заносим "FAILED"
+        - в поле LastError заносим "interrupted"
+- в поле StatusTime заносим now
+- сохраняем в БД сайт 
+- выводим в лог окончание парсинга сайта
+
+
+
+все поля объекта SiteEntity
