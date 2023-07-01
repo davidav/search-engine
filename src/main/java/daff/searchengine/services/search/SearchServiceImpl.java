@@ -12,8 +12,6 @@ import daff.searchengine.repo.LemmaRepository;
 import daff.searchengine.repo.PageRepository;
 import daff.searchengine.repo.SiteRepository;
 import daff.searchengine.util.LemmaFinder;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +24,6 @@ import java.util.Set;
 import java.util.concurrent.*;
 
 @Slf4j
-@Getter
-@Setter
 @Service
 public class SearchServiceImpl implements SearchService {
     private final LemmaFinder lemmaFinder;
@@ -59,17 +55,9 @@ public class SearchServiceImpl implements SearchService {
         List<SiteEntity> sites = createListSites(siteOptional);
         List<SearchRequest> searchRequests = createListSearchRequest(query, offset, limit, sites);
         List<SearchSiteAnalyzer> searchSiteAnalyzers = new ArrayList<>();
-
         searchRequests.forEach(searchRequest -> searchSiteAnalyzers.add(
-                new SearchSiteAnalyzer(
-                        searchRequest,
-                        searchResults,
-                        lemmaFinder,
-                        siteRepository,
-                        pageRepository,
-                        lemmaRepository,
-                        indexRepository)));
-
+                new SearchSiteAnalyzer(  searchRequest, searchResults, lemmaFinder, siteRepository,
+                        pageRepository, lemmaRepository, indexRepository)));
         ExecutorService executorService = Executors.newFixedThreadPool(sites.size());
         try {
             List<Future<Boolean>> futures = executorService.invokeAll(searchSiteAnalyzers);
@@ -80,7 +68,6 @@ public class SearchServiceImpl implements SearchService {
             throw new AppHelperException("SearchService error! " + e.getMessage());
         }
         executorService.shutdown();
-
         int count = searchResults.size();
         List<SearchResult> dataAll = new ArrayList<>(searchResults);
         dataAll.sort(SearchResult::compareTo);

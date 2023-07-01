@@ -18,7 +18,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.net.URL;
@@ -26,7 +25,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @Slf4j
-@Transactional(readOnly = true)
 public class OnePageAnalyzer implements Runnable {
     private final URL url;
     private final SitesConfig sitesConfig;
@@ -86,16 +84,13 @@ public class OnePageAnalyzer implements Runnable {
     private void correctData(@NotNull PageEntity page) {
         List<LemmaEntity> lemmasForUpdate = new ArrayList<>();
         List<LemmaEntity> lemmasForDelete = new ArrayList<>();
-
         List<IndexEntity> indexEntitiesForPage = indexRepository.findAllByPageId(page.getId());
-
         List<Integer> lemmaIds = new ArrayList<>();
         for (IndexEntity indexEntity : indexEntitiesForPage) {
             Integer lemmaId = indexEntity.getLemmaId();
             lemmaIds.add(lemmaId);
         }
         List<LemmaEntity> lemmaEntities = lemmaRepository.findAllByIdIn(lemmaIds);
-
         for (LemmaEntity l : lemmaEntities) {
             if (l.getFrequency() > 1) {
                 l.setFrequency(l.getFrequency() - 1);
@@ -108,7 +103,6 @@ public class OnePageAnalyzer implements Runnable {
         indexRepository.deleteAllByPageId(page.getId());
         lemmaRepository.deleteAll(lemmasForDelete);
         pageRepository.delete(page);
-
     }
 
     @NotNull
@@ -130,7 +124,6 @@ public class OnePageAnalyzer implements Runnable {
         } catch (IOException e) {
             throw new AppHelperException("IOException OnePageAnalyzer" + e.getMessage());
         }
-
         return pageRepository.save(PageEntity.builder()
                 .path(path)
                 .code(statusCode)

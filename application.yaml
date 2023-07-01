@@ -10,27 +10,18 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create
-    show-sql: true
     defer-datasource-initialization: true
     properties:
       hibernate:
-        show_sql: false
-        format_sql: false
         enable_lazy_load_no_trans: true
   sql:
     init:
       mode: always
 
-logging:
-  level:
-    org:
-      hibernate:
-        type: trace
-
 indexing-settings:
   sites:
-    - url: http://test.portsurgut.ru/
-      name: PORT_test
+    - url: http://portsurgut.ru/
+      name: PORT
     - url: https://slenta.ru/
       name: slenta
     - url: http://cimus.biz

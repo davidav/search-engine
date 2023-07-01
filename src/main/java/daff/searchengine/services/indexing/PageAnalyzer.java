@@ -22,6 +22,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveTask;
 
 
@@ -59,7 +60,6 @@ public class PageAnalyzer extends RecursiveTask<Boolean> {
     @Override
     protected Boolean compute() {
         log.info("start parsing {}", url);
-
         if (isThreadInterrupted())
             return false;
         try {
@@ -78,7 +78,6 @@ public class PageAnalyzer extends RecursiveTask<Boolean> {
                     .site(site)
                     .build();
             siteLinks.add(url.toString());
-
             if (page.getCode() == CODE_OK) {
                 createLemmasAndIndexes(page);
             } else {
@@ -86,7 +85,6 @@ public class PageAnalyzer extends RecursiveTask<Boolean> {
             }
             saveData(page);
             tasks = createTasks(doc);
-
         } catch (InterruptedException e) {
             log.warn("Interrupted! PageAnalyzer ", e);
             Thread.currentThread().interrupt();
@@ -98,14 +96,10 @@ public class PageAnalyzer extends RecursiveTask<Boolean> {
                     .path(url.getPath())
                     .build();
             pageRepository.save(pageError);
-
         } catch (IOException e) {
             log.warn("IOException PageAnalyzer ", e);
         }
-
-        for (PageAnalyzer task : tasks) {
-            task.join();
-        }
+        tasks.forEach(ForkJoinTask::join);
         log.info("end parsing {}", url);
         return !isThreadInterrupted();
     }
