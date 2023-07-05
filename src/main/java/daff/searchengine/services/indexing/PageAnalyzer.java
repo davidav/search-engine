@@ -211,7 +211,9 @@ public class PageAnalyzer extends RecursiveTask<Boolean> {
                 !href.endsWith(".doc") &&
                 !href.endsWith(".docx") &&
                 !href.endsWith(".xls") &&
-                !href.endsWith(".xlsx"))
+                !href.endsWith(".xlsx") &&
+                !href.endsWith(".rar") &&
+                !href.endsWith(".pptx"))
             approval = true;
         return approval;
     }
