@@ -18,6 +18,7 @@ public interface IndexRepository extends JpaRepository<IndexEntity, Integer> {
             "(SELECT l.id FROM LemmaEntity l WHERE l.site.id = :id)")
     Integer getSumRankBySite(int id);
     List<IndexEntity> findAllByPageId(int id);
+    @Query("SELECT i FROM IndexEntity i WHERE i.lemmaId IN (:ids) AND i.rank < 100")
     List<IndexEntity> findAllByLemmaIdIn(List<Integer> ids);
     void deleteAllByPageId(int id);
 

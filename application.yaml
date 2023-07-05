@@ -22,12 +22,9 @@ indexing-settings:
   sites:
     - url: http://portsurgut.ru/
       name: PORT
-#     pages - 158, lemmas - 21431
     - url: https://www.svetlovka.ru/
       name: SVETLOVKA
-#     pages - 228, lemmas - 122082
     - url: https://et-cetera.ru/mobile/
       name: ET-CETERA
-#     pages - 50, lemmas - 41905
   agent: Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6
   referer: https://www.google.com

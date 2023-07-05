@@ -126,13 +126,14 @@ class IndexRepositoryTest {
         LemmaEntity actualLemma3 = insertIntoDatabaseLemma("материал", actualSite);
         actualIndexes.add(insertIntoDatabaseIndex(actualPage, actualLemma1, 3));
         actualIndexes.add(insertIntoDatabaseIndex(actualPage, actualLemma2, 10));
-        actualIndexes.add(insertIntoDatabaseIndex(actualPage2, actualLemma2, 5));
+        actualIndexes.add(insertIntoDatabaseIndex(actualPage2, actualLemma2, 101));
         actualIndexes.add(insertIntoDatabaseIndex(actualPage2, actualLemma3, 5));
 
-        List<IndexEntity> expectedIndexes = indexRepository.findAllByLemmaIdIn(List.of(actualLemma1.getId()));
+        List<IndexEntity> expectedIndexes = indexRepository.findAllByLemmaIdIn(List.of(actualLemma1.getId(), actualLemma2.getId()));
 
-        assertEquals(1, expectedIndexes.size());
+        assertEquals(2, expectedIndexes.size());
         assertEquals(actualLemma1.getId(), expectedIndexes.get(0).getLemmaId());
+        assertEquals(actualLemma2.getId(), expectedIndexes.get(1).getLemmaId());
     }
 
     @NotNull
