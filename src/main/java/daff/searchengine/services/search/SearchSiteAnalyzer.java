@@ -8,7 +8,6 @@ import daff.searchengine.models.PageEntity;
 import daff.searchengine.repo.IndexRepository;
 import daff.searchengine.repo.LemmaRepository;
 import daff.searchengine.repo.PageRepository;
-import daff.searchengine.repo.SiteRepository;
 import daff.searchengine.util.LemmaFinder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -24,35 +23,13 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 @Slf4j
 @Getter
-public class SearchSiteAnalyzer implements Callable<Boolean> {
-
-    private final SearchRequest searchRequest;
-    private final CopyOnWriteArraySet<SearchResult> searchResults;
-    private final LemmaFinder lemmaFinder;
-    private final SiteRepository siteRepository;
-    private final PageRepository pageRepository;
-    private final LemmaRepository lemmaRepository;
-    private final IndexRepository indexRepository;
-
-    public SearchSiteAnalyzer(SearchRequest searchRequest,
-                              CopyOnWriteArraySet<SearchResult> searchResults,
-                              LemmaFinder lemmaFinder,
-                              SiteRepository siteRepository,
-                              PageRepository pageRepository,
-                              LemmaRepository lemmaRepository,
-                              IndexRepository indexRepository) {
-        this.searchRequest = searchRequest;
-        this.searchResults = searchResults;
-        this.lemmaFinder = lemmaFinder;
-        this.siteRepository = siteRepository;
-        this.pageRepository = pageRepository;
-        this.lemmaRepository = lemmaRepository;
-        this.indexRepository = indexRepository;
-    }
+public record SearchSiteAnalyzer(SearchRequest searchRequest, CopyOnWriteArraySet<SearchResult> searchResults,
+                                 LemmaFinder lemmaFinder, PageRepository pageRepository,
+                                 LemmaRepository lemmaRepository, IndexRepository indexRepository)
+        implements Callable<Boolean> {
 
     @Override
     public Boolean call() {
-
         List<LemmaEntity> lemmasRequest = lemmaRepository.findAllByLemmaInAndSiteId(
                 searchRequest.getQuery(), searchRequest.getSite().getId());
         if (lemmasRequest.size() != searchRequest.getQuery().size() || lemmasRequest.isEmpty()) return false;
@@ -62,21 +39,17 @@ public class SearchSiteAnalyzer implements Callable<Boolean> {
             lemmaRequestIds.add(id);
         }
         List<IndexEntity> indexesRequest = indexRepository.findAllByLemmaIdIn(lemmaRequestIds);
-
         List<PageModel> pagesRequest = getPagesRequest(indexesRequest, lemmasRequest.size());
         if (pagesRequest.isEmpty()) return false;
-
         List<PageModel> pagesResponse = calcRelevance(pagesRequest, lemmasRequest, indexesRequest);
-
         Set<SearchResult> searchResultsSite = prepareResult(pagesResponse, searchRequest.getQuery());
         if (searchResultsSite.isEmpty()) return false;
-
         searchResults.addAll(searchResultsSite);
-
         return true;
     }
+
     @NotNull
-    private synchronized  List<PageModel> getPagesRequest(@NotNull List<IndexEntity> indexEntities, int countLemmas) {
+    private synchronized List<PageModel> getPagesRequest(@NotNull List<IndexEntity> indexEntities, int countLemmas) {
         Map<Integer, Integer> countIndexForPage = new HashMap<>();
         for (IndexEntity indexEntity : indexEntities) {
             int pageId = indexEntity.getPageId();

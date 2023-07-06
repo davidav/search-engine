@@ -20,11 +20,16 @@ spring:
 
 indexing-settings:
   sites:
-    - url: http://portsurgut.ru/
-      name: PORT
-    - url: https://www.svetlovka.ru/
-      name: SVETLOVKA
-    - url: https://et-cetera.ru/mobile/
-      name: ET-CETERA
+#    - url: http://portsurgut.ru/
+#      name: PORT
+#    - url: https://www.svetlovka.ru/
+#      name: SVETLOVKA
+#    - url: https://et-cetera.ru/mobile/
+#      name: ET-CETERA
+    - url: http://test.portsurgut.ru/
+      name: TEST
+    - url: http://art-surgut.ru/
+      name: ART
+
   agent: Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6
   referer: https://www.google.com

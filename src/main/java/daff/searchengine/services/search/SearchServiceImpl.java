@@ -56,7 +56,7 @@ public class SearchServiceImpl implements SearchService {
         List<SearchRequest> searchRequests = createListSearchRequest(query, offset, limit, sites);
         List<SearchSiteAnalyzer> searchSiteAnalyzers = new ArrayList<>();
         searchRequests.forEach(searchRequest -> searchSiteAnalyzers.add(
-                new SearchSiteAnalyzer(  searchRequest, searchResults, lemmaFinder, siteRepository,
+                new SearchSiteAnalyzer(  searchRequest, searchResults, lemmaFinder,
                         pageRepository, lemmaRepository, indexRepository)));
         ExecutorService executorService = Executors.newFixedThreadPool(sites.size());
         try {
