@@ -9,30 +9,30 @@ import daff.searchengine.repo.IndexRepository;
 import daff.searchengine.repo.LemmaRepository;
 import daff.searchengine.repo.PageRepository;
 import daff.searchengine.util.LemmaFinder;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 @Slf4j
-@Getter
 public record SearchSiteAnalyzer(SearchRequest searchRequest, CopyOnWriteArraySet<SearchResult> searchResults,
                                  LemmaFinder lemmaFinder, PageRepository pageRepository,
                                  LemmaRepository lemmaRepository, IndexRepository indexRepository)
         implements Callable<Boolean> {
 
     @Override
-    public Boolean call() {
+    @NotNull
+    public  Boolean call() {
         List<LemmaEntity> lemmasRequest = lemmaRepository.findAllByLemmaInAndSiteId(
                 searchRequest.getQuery(), searchRequest.getSite().getId());
-        if (lemmasRequest.size() != searchRequest.getQuery().size() || lemmasRequest.isEmpty()) return false;
+        if (lemmasRequest.size() != searchRequest.getQuery().size() || lemmasRequest.isEmpty()) {
+            return false;
+        }
         List<Integer> lemmaRequestIds = new ArrayList<>();
         for (LemmaEntity lemmaEntity : lemmasRequest) {
             Integer id = lemmaEntity.getId();
@@ -40,10 +40,14 @@ public record SearchSiteAnalyzer(SearchRequest searchRequest, CopyOnWriteArraySe
         }
         List<IndexEntity> indexesRequest = indexRepository.findAllByLemmaIdIn(lemmaRequestIds);
         List<PageModel> pagesRequest = getPagesRequest(indexesRequest, lemmasRequest.size());
-        if (pagesRequest.isEmpty()) return false;
+        if (pagesRequest.isEmpty()) {
+            return false;
+        }
         List<PageModel> pagesResponse = calcRelevance(pagesRequest, lemmasRequest, indexesRequest);
         Set<SearchResult> searchResultsSite = prepareResult(pagesResponse, searchRequest.getQuery());
-        if (searchResultsSite.isEmpty()) return false;
+        if (searchResultsSite.isEmpty()) {
+            return false;
+        }
         searchResults.addAll(searchResultsSite);
         return true;
     }
@@ -58,7 +62,9 @@ public record SearchSiteAnalyzer(SearchRequest searchRequest, CopyOnWriteArraySe
         }
         List<Integer> pageIds = new ArrayList<>();
         for (Map.Entry<Integer, Integer> entry : countIndexForPage.entrySet()) {
-            if (countLemmas == entry.getValue()) pageIds.add(entry.getKey());
+            if (countLemmas == entry.getValue()) {
+                pageIds.add(entry.getKey());
+            }
         }
         List<PageEntity> byIdIn = pageRepository.findByIdIn(pageIds);
         return pagesEntityToPagesModel(byIdIn);
@@ -84,8 +90,9 @@ public record SearchSiteAnalyzer(SearchRequest searchRequest, CopyOnWriteArraySe
     private float getRank(PageModel page, LemmaEntity lemma, @NotNull List<IndexEntity> indexes) {
         float rank = 0;
         for (IndexEntity indexEntity : indexes) {
-            if (indexEntity.getPageId() == page.getId() && indexEntity.getLemmaId() == lemma.getId())
+            if (indexEntity.getPageId() == page.getId() && indexEntity.getLemmaId() == lemma.getId()) {
                 rank = indexEntity.getRank();
+            }
         }
         return rank;
     }
@@ -141,7 +148,9 @@ public record SearchSiteAnalyzer(SearchRequest searchRequest, CopyOnWriteArraySe
         for (String lemma : lemmasQuery) {
             for (String word : words) {
                 List<String> normalForms = lemmaFinder.getNormalForms(word);
-                if (normalForms.isEmpty()) continue;
+                if (normalForms.isEmpty()) {
+                    continue;
+                }
                 String form = normalForms.stream().findFirst().get();
                 if (form.equals(lemma)) {
                     if (count == 0) {

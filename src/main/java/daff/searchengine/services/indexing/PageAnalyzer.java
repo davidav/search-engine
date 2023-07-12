@@ -30,6 +30,10 @@ import java.util.concurrent.RecursiveTask;
 public class PageAnalyzer extends RecursiveTask<Boolean> {
 
     private static final int CODE_OK = 200;
+    private static final int DELAY = 200;
+    private final String[] wrongUrlSymbols = new String[]{"#", "term"};
+    private final String[] fileExtensions = new String[]{".pdf", ".webp", ".jpg", ".jpeg", ".png", ".bmp", ".gif",
+            ".mp3", ".mp4", ".avi", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".rar"};
     private final URL url;
     private final SiteEntity site;
     private final CopyOnWriteArrayList<String> siteLinks;
@@ -63,7 +67,7 @@ public class PageAnalyzer extends RecursiveTask<Boolean> {
         if (isThreadInterrupted())
             return false;
         try {
-            Thread.sleep(200);
+            Thread.sleep(DELAY);
             Document doc = Jsoup.connect(url.toString())
                     .userAgent(site.getAgent())
                     .referrer(site.getReferer())
@@ -162,8 +166,8 @@ public class PageAnalyzer extends RecursiveTask<Boolean> {
     }
 
     @NotNull
-    private List <PageAnalyzer> createTasks(@NotNull Document doc) {
-        List<PageAnalyzer> tasksFromPage= new ArrayList<>();
+    private List<PageAnalyzer> createTasks(@NotNull Document doc) {
+        List<PageAnalyzer> tasksFromPage = new ArrayList<>();
         Elements elements = doc.select("body").select("a");
         for (Element a : elements) {
             String href = a.absUrl("href").replaceAll("\\?.+", "");
@@ -193,29 +197,21 @@ public class PageAnalyzer extends RecursiveTask<Boolean> {
     }
 
     private boolean isValidateLink(String href) {
-        boolean approval = false;
         href = href.toLowerCase(Locale.ROOT);
-        if (href.startsWith(site.getUrl()) &&
-                !href.contains("#") &&
-                !href.contains("term") &&
-                !href.endsWith(".pdf") &&
-                !href.endsWith(".webp") &&
-                !href.endsWith(".jpg") &&
-                !href.endsWith(".jpeg") &&
-                !href.endsWith(".png") &&
-                !href.endsWith(".bmp") &&
-                !href.endsWith(".gif") &&
-                !href.endsWith(".mp3") &&
-                !href.endsWith(".mp4") &&
-                !href.endsWith(".avi") &&
-                !href.endsWith(".doc") &&
-                !href.endsWith(".docx") &&
-                !href.endsWith(".xls") &&
-                !href.endsWith(".xlsx") &&
-                !href.endsWith(".rar") &&
-                !href.endsWith(".pptx"))
-            approval = true;
-        return approval;
+        if (!href.startsWith(site.getUrl())) {
+            return false;
+        }
+        for (String wrongUrlSymbol : wrongUrlSymbols) {
+            if (href.contains(wrongUrlSymbol)) {
+                return false;
+            }
+        }
+        for (String fileExtension : fileExtensions) {
+            if (href.endsWith(fileExtension)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private boolean isThreadInterrupted() {

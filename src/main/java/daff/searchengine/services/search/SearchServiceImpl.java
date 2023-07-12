@@ -77,15 +77,16 @@ public class SearchServiceImpl implements SearchService {
     }
 
     private void validateInputData(@NotNull String query, Optional<SiteEntity> site) {
-        if (query.equals(""))
+        if (query.equals("")) {
             throw new AppHelperException("Задан пустой поисковый запрос");
-        if (site.isEmpty()) {
-            if (isSiteRepositoryEmpty() || !isAllSitesIndexed())
-                throw new AppHelperException("Сайты не проиндексированы");
-        } else {
-            if (!site.get().getStatus().equals(StatusType.INDEXED))
-                throw new AppHelperException("Заданый сайт не проиндесирован");
         }
+        if (site.isEmpty() && (isSiteRepositoryEmpty() || !isAllSitesIndexed())) {
+            throw new AppHelperException("Сайты не проиндексированы");
+        }
+        if (site.isPresent() && !site.get().getStatus().equals(StatusType.INDEXED)) {
+                throw new AppHelperException("Заданый сайт не проиндесирован");
+            }
+
     }
 
     @NotNull

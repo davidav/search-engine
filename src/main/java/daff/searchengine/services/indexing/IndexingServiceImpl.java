@@ -33,6 +33,8 @@ import java.util.concurrent.RejectedExecutionException;
 public class IndexingServiceImpl implements IndexingService {
 
     public static boolean isStop;
+    private final String[] fileExtensions = new String[]{".pdf", ".webp", ".jpg", ".jpeg", ".png", ".bmp", ".gif",
+            ".mp3", ".mp4", ".avi", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".rar"};
     private final SitesConfig sitesConfig;
     private final SiteRepository siteRepository;
     private final PageRepository pageRepository;
@@ -68,55 +70,64 @@ public class IndexingServiceImpl implements IndexingService {
     @Override
     public boolean isIndexing() {
         for (Future<Boolean> f : futures) {
-            if (!f.isDone()) return true;
+            if (!f.isDone()) {
+                return true;
+            }
         }
         return false;
     }
 
     @Override
     public ResultDTO startIndexing() {
-        if (isIndexing()) throw new AppHelperException("Индексация уже запущена");
+        if (isIndexing()) {
+            throw new AppHelperException("Индексация уже запущена");
+        }
         setIsStop(false);
         List<SiteEntity> sites = initSites();
         List<SiteAnalyzer> siteAnalyzers = new ArrayList<>();
         sites.forEach(site -> siteAnalyzers.add(
                 new SiteAnalyzer(site, siteRepository, pageRepository, lemmaRepository, indexRepository, lemmaFinder)));
         executorService = Executors.newFixedThreadPool(siteAnalyzers.size());
-        for (SiteAnalyzer siteAnalyzer : siteAnalyzers) {
-            try {
+        try {
+            for (SiteAnalyzer siteAnalyzer : siteAnalyzers) {
                 Future<Boolean> f = executorService.submit(siteAnalyzer, true);
                 futures.add(f);
-            } catch (NullPointerException | RejectedExecutionException e) {
-                throw new AppHelperException("IndexingService error " + e.getMessage());
             }
+        } catch (NullPointerException | RejectedExecutionException e) {
+            throw new AppHelperException("IndexingService error " + e.getMessage());
         }
-        return new ResultDTO(true);
+       return new ResultDTO(true);
     }
 
     @Override
     public ResultDTO stopIndexing() {
-        if (!isIndexing())
+        if (!isIndexing()) {
             throw new AppHelperException("Индексация не запущена");
+        }
         setIsStop(true);
         futures.forEach(f -> f.cancel(true));
-        if (executorService != null) executorService.shutdown();
+        if (executorService != null) {
+            executorService.shutdown();
+        }
         return new ResultDTO(true);
     }
 
     @Override
     public ResultDTO indexPage(String urlPage) {
+        URL url;
         try {
-            URL url = new URL(urlPage);
-            if (sitesConfig.getSites().stream().noneMatch(s -> url.toString().startsWith(s.getUrl())))
-                throw new AppHelperException("Данная страница находится за пределами сайтов, " +
-                        "указанных в конфигурационном файле");
-            validateUrl(urlPage);
-            new Thread(new OnePageAnalyzer(url, sitesConfig, lemmaFinder, siteRepository,
-                    pageRepository, lemmaRepository, indexRepository))
-                    .start();
+            url = new URL(urlPage);
         } catch (MalformedURLException e) {
             throw new AppHelperException("url error " + e.getMessage());
         }
+        if (sitesConfig.getSites().stream().noneMatch(s -> url.toString().startsWith(s.getUrl()))) {
+            throw new AppHelperException("Данная страница находится за пределами сайтов, " +
+                    "указанных в конфигурационном файле");
+        }
+        validateUrl(urlPage);
+        new Thread(new OnePageAnalyzer(url, sitesConfig, lemmaFinder, siteRepository,
+                pageRepository, lemmaRepository, indexRepository))
+                .start();
         return new ResultDTO(true);
     }
 
@@ -140,19 +151,10 @@ public class IndexingServiceImpl implements IndexingService {
 
     private void validateUrl(@NotNull String urlPage) {
         String urlPageLowerCase = urlPage.toLowerCase(Locale.ROOT);
-        if (urlPageLowerCase.endsWith(".pdf") ||
-                urlPageLowerCase.endsWith(".webp") ||
-                urlPageLowerCase.endsWith(".jpg") ||
-                urlPageLowerCase.endsWith(".jpeg") ||
-                urlPageLowerCase.endsWith(".png") ||
-                urlPageLowerCase.endsWith(".bmp") ||
-                urlPageLowerCase.endsWith(".gif") ||
-                urlPageLowerCase.endsWith(".mp3") ||
-                urlPageLowerCase.endsWith(".mp4") ||
-                urlPageLowerCase.endsWith(".avi") ||
-                urlPageLowerCase.endsWith(".doc") ||
-                urlPageLowerCase.endsWith(".docx")) {
-            throw new AppHelperException("this url is not a page");
+        for (String fileExtension : fileExtensions) {
+            if ((urlPageLowerCase.endsWith(fileExtension))) {
+                throw new AppHelperException("this url is not a page");
+            }
         }
     }
 }
